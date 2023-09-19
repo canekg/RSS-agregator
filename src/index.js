@@ -3,7 +3,6 @@ import 'bootstrap';
 import i18next from 'i18next';
 import app from './app.js';
 import resources from './locales/index.js';
-import { each } from 'lodash';
 
 const func = () => {
   const promise = new Promise((resolve) => {

@@ -1,5 +1,3 @@
-import _ from 'lodash';
-
 const render = (message, isValid) => {
   const input = document.querySelector('#url-input');
   const feedback = document.querySelector('.feedback');
