@@ -17,6 +17,7 @@ const handlerOfBtnFormSection = (state, input) => {
         state.errorMessage = error.message;
         watcher(state).validationUrl.isValid = false;
       });
+    form.reset();
   });
 };
 
