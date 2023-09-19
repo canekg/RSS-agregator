@@ -24,6 +24,7 @@ const func = () => {
         validationUrl: {
           isValid: null,
         },
+        validUrls: [],
       };
       return state;
     })
