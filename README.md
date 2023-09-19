@@ -8,4 +8,4 @@
 
 ### Link:
 
-https://frontend-project-11-f2dtecfaw-canekg.vercel.app/
+https://frontend-project-11-czpm0i1hh-canekg.vercel.app/
