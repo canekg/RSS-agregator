@@ -3,8 +3,7 @@ import render from '../render/renderErrorRssUrl.js';
 
 const watcherValidationURL = (state) => {
   const watcher = onChange(state, (path, isValid) => {
-    if (isValid === true) return;
-    render(state.errorMessage);
+    render(state.errorMessage, isValid);
   });
   return watcher;
 };

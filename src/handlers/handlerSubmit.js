@@ -9,7 +9,7 @@ const handlerOfBtnFormSection = (state, input) => {
     const url = input.value;
     validate(state.i18n, url)
       .then((rssUrl) => {
-        watcher(state).currentProcess = 'loadingRssContent';
+        state.currentProcess = 'loadingRssContent';
         watcher(state).validationUrl.isValid = true;
         return rssUrl;
       })

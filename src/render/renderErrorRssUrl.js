@@ -1,14 +1,14 @@
 import _ from 'lodash';
 
-const render = (message) => {
+const render = (message, isValid) => {
   const input = document.querySelector('#url-input');
   const feedback = document.querySelector('.feedback');
-  if (message) {
-    input.classList.add('is-invalid');
-    feedback.textContent = message;
-  } else {
+  if (isValid) {
     input.classList.remove('is-invalid');
     feedback.textContent = '';
+  } else {
+    input.classList.add('is-invalid');
+    feedback.textContent = message;
   }
   input.focus();
   input.value = '';
