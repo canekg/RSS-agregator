@@ -10,14 +10,15 @@ const handlerOfBtnFormSection = (state, input) => {
     validate(state.i18n, url)
       .then((rssUrl) => {
         state.currentProcess = 'loadingRssContent';
+        state.validationUrl.isValid = null;
         watcher(state).validationUrl.isValid = true;
         return rssUrl;
       })
       .catch((error) => {
         state.errorMessage = error.message;
+        state.validationUrl.isValid = null;
         watcher(state).validationUrl.isValid = false;
       });
-    form.reset();
   });
 };
 
