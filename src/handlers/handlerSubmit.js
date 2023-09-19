@@ -9,9 +9,15 @@ const handlerOfBtnFormSection = (state, input) => {
     const url = input.value;
     validate(state.i18n, url)
       .then((rssUrl) => {
+        const urls = state.validUrls;
+        if (urls.includes(rssUrl)) throw new Error(state.i18n.t('validation.errors.errorUniqUrl'));
+        return rssUrl;
+      })
+      .then((rssUrl) => {
         state.currentProcess = 'loadingRssContent';
         state.validationUrl.isValid = null;
         watcher(state).validationUrl.isValid = true;
+        state.validUrls.push(rssUrl);
         return rssUrl;
       })
       .catch((error) => {
