@@ -6,7 +6,9 @@ overrides: []
 parserOptions:
   ecmaVersion: latest
   sourceType: module
-rules: { 
-  import/extensions: 0,
-  no-underscore-dangle: [2, { 'allow': ['__filename', '__dirname'] }],
- }
+rules:
+  {
+    import/extensions: 0,
+    'props': true,
+    no-underscore-dangle: [2, { 'allow': ['__filename', '__dirname'] }],
+  }
