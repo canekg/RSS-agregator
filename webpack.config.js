@@ -3,13 +3,13 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const isProduction = process.env.NODE_ENV === 'production';
-const filename = fileURLToPath(import.meta.url);
-const dirname = path.dirname(filename);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const config = {
   entry: './src/index.js',
   output: {
-    path: path.resolve(dirname, 'dist'),
+    path: path.resolve(__dirname, 'dist'),
   },
   devServer: {
     open: true,
