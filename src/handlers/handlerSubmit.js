@@ -10,20 +10,22 @@ const handlerOfBtnFormSection = (state, input) => {
     validate(state.i18n, url)
       .then((rssUrl) => {
         const urls = state.validUrls;
-        if (urls.includes(rssUrl)) throw new Error(state.i18n.t('validation.errors.errorUniqUrl'));
+        if (urls.includes(rssUrl)) {
+          throw new Error(state.i18n.t('validation.errors.errorUniqUrl'));
+        }
         return rssUrl;
       })
       .then((rssUrl) => {
         state.currentProcess = 'loadingRssContent';
-        state.validationUrl.isValid = null;
-        watcher(state).validationUrl.isValid = true;
+        state.isValid = null;
+        watcher(state).isValid = true;
         state.validUrls.push(rssUrl);
         return rssUrl;
       })
       .catch((error) => {
         state.errorMessage = error.message;
-        state.validationUrl.isValid = null;
-        watcher(state).validationUrl.isValid = false;
+        state.isValid = null;
+        watcher(state).isValid = false;
       });
   });
 };
