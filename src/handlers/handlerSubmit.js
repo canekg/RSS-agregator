@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import validate from '../validation/validate.js';
 import watcher from '../view/watcher.js';
 
