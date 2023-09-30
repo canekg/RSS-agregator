@@ -1,11 +1,8 @@
 import onChange from 'on-change';
-import render from '../render/renderErrorRssUrl.js';
+import render from '../render/render.js';
 
-const watcherValidationURL = (state) => {
-  const watcher = onChange(state, (path, isValid) => {
-    render(state.errorMessage, isValid);
-  });
-  return watcher;
-};
+const watcher = (state) => onChange(state, (path, value) => {
+  render(state, value, path);
+});
 
-export default watcherValidationURL;
+export default watcher;
