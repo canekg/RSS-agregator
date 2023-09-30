@@ -12,6 +12,3 @@ develop:
 
 build:
 	NODE_ENV=production npx webpack
-
-test-coverage:
-	npm test -- --coverage --coverageProvider=v8
