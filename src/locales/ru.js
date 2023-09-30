@@ -6,10 +6,17 @@ export default {
     validation: {
       errors: {
         errorURL: 'Ссылка должна быть валидным RSS URL',
-        errorUniqUrl: 'RSS URL уже существует',
+        errorUniqUrl: 'RSS уже существует',
         errorRequared: 'Поле не должно быть пустым',
       },
-      isValid: null,
+    },
+    loading: {
+      errrors: {
+        errorNetWork: 'Ошибка сети',
+        errorResource: 'Ресурс не содержит валидный RSS',
+      },
+      loadingRssContent: 'RSS загружается',
+      loadedRssContent: 'RSS успешно загружен',
     },
     // END
   },
