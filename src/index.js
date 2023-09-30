@@ -2,8 +2,7 @@ import './styles.scss';
 import 'bootstrap';
 import i18next from 'i18next';
 import resources from './locales/index.js';
-import watcherValidationURL from './view/watcher.js';
-import handlerOfBtnFormSection from './handlers/handlerSubmit.js';
+import handler from './handlers/handler.js';
 
 const func = () => {
   const promise = new Promise((resolve) => {
@@ -21,16 +20,22 @@ const func = () => {
       const state = {
         i18n: i18nInst,
         errorMessage: null,
-        currentProcess: 'filling', // fillingRssUrl, loadingRssContent
+        currentProcess: null, // 'loadingRssContent, loadedRssContent'
         isValid: null,
         validUrls: [],
+        content: {
+          posts: [],
+          feeds: [],
+        },
+        uiState: {
+          visitedLinksIds: new Set(),
+          modalId: '',
+        },
       };
       return state;
     })
     .then((state) => {
-      const input = document.querySelector('#url-input');
-      watcherValidationURL(state);
-      handlerOfBtnFormSection(state, input);
+      handler(state);
     })
     .catch((e) => {
       throw new Error(e);
