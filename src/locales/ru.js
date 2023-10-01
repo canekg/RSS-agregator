@@ -5,9 +5,9 @@ export default {
     },
     validation: {
       errors: {
-        errorURL: 'Ссылка должна быть валидным RSS URL',
+        errorURL: 'Ссылка должна быть валидным URL',
         errorUniqUrl: 'RSS уже существует',
-        errorRequared: 'Поле не должно быть пустым',
+        errorRequared: 'Не должно быть пустым',
       },
     },
     loading: {
