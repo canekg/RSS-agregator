@@ -3,6 +3,7 @@ const feedback = document.querySelector('.feedback');
 const feedSection = document.querySelector('.feeds');
 const postSection = document.querySelector('.posts');
 const modalWindow = document.querySelector('.modal-content');
+const btn = document.querySelector('button[type="submit"]');
 
 const renderFeedback = (state, value) => {
   if (state.isValid) {
@@ -90,7 +91,6 @@ const renderPosts = (state) => {
     );
     const newPostLink = document.createElement('a');
     newPostLink.textContent = title;
-    // console.log(state.content);
     newPostLink.classList.add('fw-bold');
     newPost.classList.add('fw-bold');
     newPostLink.setAttribute('data-id', id);
@@ -113,9 +113,19 @@ const renderPosts = (state) => {
   return content;
 };
 
+const renderButton = (state) => {
+  if (state.currentProcess !== 'loadedRssContent') {
+    btn.classList.add('disabled');
+    input.setAttribute('readonly', '');
+  } else {
+    btn.classList.remove('disabled');
+    input.removeAttribute('readonly');
+  }
+};
+
 const render = (state, value, path) => {
   switch (path) {
-    case 'isValid': {
+    case 'errorMessage': {
       renderFeedback(state, value);
       break;
     }
@@ -134,6 +144,7 @@ const render = (state, value, path) => {
     }
     case 'currentProcess': {
       renderFeedback(state, value);
+      renderButton(state);
       break;
     }
     case 'uiState.visitedLinksIds': {
