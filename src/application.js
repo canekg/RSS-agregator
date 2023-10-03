@@ -38,11 +38,15 @@ const createPosts = (state, newPosts, feedId) => {
   watcher(state).content.posts.unshift(...newPosts);
 };
 const getAxiosResponse = (rssUrl) => {
-  const allOrigins = 'https://allorigins.hexlet.app/get';
-  const newUrl = new URL(allOrigins);
-  newUrl.searchParams.set('url', rssUrl);
-  newUrl.searchParams.set('disableCache', 'true');
-  return axios.get(newUrl);
+  try {
+    const allOrigins = 'https://allorigins.hexlet.app/get';
+    const newUrl = new URL(allOrigins);
+    newUrl.searchParams.set('url', rssUrl);
+    newUrl.searchParams.set('disableCache', 'true');
+    return axios.get(newUrl);
+  } catch {
+    throw new Error('errorNetWork');
+  }
 };
 const getNewPosts = (state) => {
   const promises = state.content.feeds.map(({ link, feedId }) => getAxiosResponse(link)
@@ -105,6 +109,9 @@ const handler = (state) => {
       .catch((error) => {
         if (error.message === 'errorParsing') {
           state.errorMessage = state.i18n.t('loading.errrors.errorResource');
+          state.validUrls.pop();
+        } else if (error.message === 'errorNetWork') {
+          state.errorMessage = state.i18n.t('loading.errrors.errorNetWork');
           state.validUrls.pop();
         } else {
           state.errorMessage = error.message;
