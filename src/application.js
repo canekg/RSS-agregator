@@ -103,9 +103,15 @@ const handler = (state) => {
         handlerClick(state, btns);
       })
       .catch((error) => {
-        state.errorMessage = error.message;
+        if (error.message === 'errorParsing') {
+          state.errorMessage = state.i18n.t('loading.errrors.errorResource');
+          state.validUrls.pop();
+        } else {
+          state.errorMessage = error.message;
+        }
         state.isValid = null;
         watcher(state).isValid = false;
+        watcher(state).currentProcess = null;
       });
   });
 };
