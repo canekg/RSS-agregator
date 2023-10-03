@@ -113,8 +113,8 @@ const renderPosts = (state) => {
   return content;
 };
 
-const renderButton = (state) => {
-  if (state.currentProcess !== 'loadedRssContent') {
+const renderButtonInput = (state) => {
+  if (state.currentProcess === 'loadingRssContent') {
     btn.classList.add('disabled');
     input.setAttribute('readonly', '');
   } else {
@@ -144,7 +144,7 @@ const render = (state, value, path) => {
     }
     case 'currentProcess': {
       renderFeedback(state, value);
-      renderButton(state);
+      renderButtonInput(state);
       break;
     }
     case 'uiState.visitedLinksIds': {
