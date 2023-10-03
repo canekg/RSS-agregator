@@ -125,7 +125,7 @@ const renderButton = (state) => {
 
 const render = (state, value, path) => {
   switch (path) {
-    case 'errorMessage': {
+    case 'isValid': {
       renderFeedback(state, value);
       break;
     }
