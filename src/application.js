@@ -61,9 +61,7 @@ const getNewPosts = (state) => {
     })
     .catch(() => {
       state.errorMessage = state.i18n.t('loading.errrors.errorNetWork');
-      state.isValid = null;
-      watcher(state).isValid = false;
-      watcher(state).currentProcess = null;
+      throw new Error();
     }));
 
   Promise.allSettled(promises).finally(() => {
