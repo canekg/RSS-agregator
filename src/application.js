@@ -56,8 +56,7 @@ const getNewPosts = (state) => {
       return Promise.resolve();
     })
     .catch(() => {
-      state.errorMessage = state.i18n.t('loading.errrors.errorNetWork');
-      throw new Error();
+      throw new Error(state.i18n.t('loading.errrors.errorNetWork'));
     }));
 
   Promise.allSettled(promises).finally(() => {
