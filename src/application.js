@@ -37,15 +37,19 @@ const createPosts = (state, newPosts, feedId) => {
   });
   watcher(state).content.posts.unshift(...newPosts);
 };
-const getAxiosResponse = (rssUrl) => {
-  const allOrigins = 'https://allorigins.hexlet.app/get';
-  const newUrl = new URL(allOrigins);
-  newUrl.searchParams.set('url', rssUrl);
-  newUrl.searchParams.set('disableCache', 'true');
-  return axios.get(newUrl);
+const getAxiosResponse = (rssUrl, state) => {
+  try {
+    const allOrigins = 'https://allorigins.hexlet.app/get';
+    const newUrl = new URL(allOrigins);
+    newUrl.searchParams.set('url', rssUrl);
+    newUrl.searchParams.set('disableCache', 'true');
+    return axios.get(newUrl);
+  } catch {
+    throw new Error(state.i18n.t('loading.errrors.errorNetWork'));
+  }
 };
 const getNewPosts = (state) => {
-  const promises = state.content.feeds.map(({ link, feedId }) => getAxiosResponse(link)
+  const promises = state.content.feeds.map(({ link, feedId }) => getAxiosResponse(link, state)
     .then((response) => {
       const { posts } = parserRss(response, feedId);
       const addedPosts = state.content.posts.map((post) => post.link);
@@ -55,9 +59,11 @@ const getNewPosts = (state) => {
       }
       return Promise.resolve();
     })
-    .catch(() => {
-      state.errorMessage = state.i18n.t('loading.errrors.errorNetWork');
-      throw new Error();
+    .catch((error) => {
+      state.errorMessage = error.message;
+      state.isValid = null;
+      watcher(state).isValid = false;
+      watcher(state).currentProcess = null;
     }));
 
   Promise.allSettled(promises).finally(() => {
@@ -91,11 +97,7 @@ const handler = (state) => {
         state.isValid = true;
         state.validUrls.push(rssUrl);
         watcher(state).currentProcess = 'loadingRssContent';
-        return getAxiosResponse(rssUrl);
-      })
-      .catch(() => {
-        state.errorMessage = state.i18n.t('loading.errrors.errorNetWork');
-        throw new Error();
+        return getAxiosResponse(rssUrl, state);
       })
       .then((response) => {
         const feedId = _.uniqueId();
@@ -155,8 +157,8 @@ const app = () => {
       handler(state);
       getNewPosts(watcher(state));
     })
-    .catch((e) => {
-      throw new Error(e);
+    .catch((error) => {
+      throw new Error(error);
     });
 };
 export default app;
