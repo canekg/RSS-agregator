@@ -37,24 +37,15 @@ const createPosts = (state, newPosts, feedId) => {
   });
   watcher(state).content.posts.unshift(...newPosts);
 };
-const getAxiosResponse = (rssUrl, state) => {
-  try {
-    const allOrigins = 'https://allorigins.hexlet.app/get';
-    const newUrl = new URL(allOrigins);
-    newUrl.searchParams.set('url', rssUrl);
-    newUrl.searchParams.set('disableCache', 'true');
-    return axios.get(newUrl);
-  } catch (error) {
-    if (error.message === 'errorNetWork') {
-      state.errorMessage = state.i18n.t('loading.errrors.errorNetWork');
-      state.isValid = null;
-      watcher(state).isValid = false;
-      watcher(state).currentProcess = null;
-    }
-  }
+const getAxiosResponse = (rssUrl) => {
+  const allOrigins = 'https://allorigins.hexlet.app/get';
+  const newUrl = new URL(allOrigins);
+  newUrl.searchParams.set('url', rssUrl);
+  newUrl.searchParams.set('disableCache', 'true');
+  return axios.get(newUrl);
 };
 const getNewPosts = (state) => {
-  const promises = state.content.feeds.map(({ link, feedId }) => getAxiosResponse(link, state)
+  const promises = state.content.feeds.map(({ link, feedId }) => getAxiosResponse(link)
     .then((response) => {
       const { posts } = parserRss(response, feedId);
       const addedPosts = state.content.posts.map((post) => post.link);
@@ -64,13 +55,9 @@ const getNewPosts = (state) => {
       }
       return Promise.resolve();
     })
-    .catch((error) => {
-      if (error.message === 'errorNetWork') {
-        state.errorMessage = state.i18n.t('loading.errrors.errorNetWork');
-        state.isValid = null;
-        watcher(state).isValid = false;
-        watcher(state).currentProcess = null;
-      }
+    .catch(() => {
+      state.errorMessage = state.i18n.t('loading.errrors.errorNetWork');
+      throw new Error();
     }));
 
   Promise.allSettled(promises).finally(() => {
@@ -104,7 +91,11 @@ const handler = (state) => {
         state.isValid = true;
         state.validUrls.push(rssUrl);
         watcher(state).currentProcess = 'loadingRssContent';
-        return getAxiosResponse(rssUrl, state);
+        return getAxiosResponse(rssUrl);
+      })
+      .catch(() => {
+        state.errorMessage = state.i18n.t('loading.errrors.errorNetWork');
+        throw new Error();
       })
       .then((response) => {
         const feedId = _.uniqueId();
@@ -119,9 +110,6 @@ const handler = (state) => {
       .catch((error) => {
         if (error.message === 'errorParsing') {
           state.errorMessage = state.i18n.t('loading.errrors.errorResource');
-          state.validUrls.pop();
-        } else if (error.message === 'errorNetWork') {
-          state.errorMessage = state.i18n.t('loading.errrors.errorNetWork');
           state.validUrls.pop();
         } else {
           state.errorMessage = error.message;
