@@ -37,7 +37,7 @@ const createPosts = (state, newPosts, feedId) => {
   });
   watcher(state).content.posts.unshift(...newPosts);
 };
-const getAxiosResponse = (rssUrl, state) => {
+const getAxiosResponse = (rssUrl) => {
   const allOrigins = 'https://allorigins.hexlet.app/get';
   const newUrl = new URL(allOrigins);
   newUrl.searchParams.set('url', rssUrl);
@@ -45,7 +45,7 @@ const getAxiosResponse = (rssUrl, state) => {
   return axios.get(newUrl);
 };
 const getNewPosts = (state) => {
-  const promises = state.content.feeds.map(({ link, feedId }) => getAxiosResponse(link, state)
+  const promises = state.content.feeds.map(({ link, feedId }) => getAxiosResponse(link)
     .then((response) => {
       const { posts } = parserRss(response, feedId);
       const addedPosts = state.content.posts.map((post) => post.link);
@@ -54,11 +54,7 @@ const getNewPosts = (state) => {
         createPosts(state, newPosts, feedId);
       }
       return Promise.resolve();
-    })
-    // .catch((error) => {
-    //   throw new Error('dv');
-    // })
-    );
+    }));
 
   Promise.allSettled(promises).finally(() => {
     setTimeout(() => getNewPosts(state), 5000);
@@ -91,7 +87,7 @@ const handler = (state) => {
         state.isValid = true;
         state.validUrls.push(rssUrl);
         watcher(state).currentProcess = 'loadingRssContent';
-        return getAxiosResponse(rssUrl, state);
+        return getAxiosResponse(rssUrl);
       })
       .then((response) => {
         const feedId = _.uniqueId();
