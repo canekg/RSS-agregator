@@ -38,15 +38,11 @@ const createPosts = (state, newPosts, feedId) => {
   watcher(state).content.posts.unshift(...newPosts);
 };
 const getAxiosResponse = (rssUrl, state) => {
-  try {
-    const allOrigins = 'https://allorigins.hexlet.app/get';
-    const newUrl = new URL(allOrigins);
-    newUrl.searchParams.set('url', rssUrl);
-    newUrl.searchParams.set('disableCache', 'true');
-    return axios.get(newUrl);
-  } catch {
-    throw new Error(state.i18n.t('loading.errrors.errorNetWork'));
-  }
+  const allOrigins = 'https://allorigins.hexlet.app/get';
+  const newUrl = new URL(allOrigins);
+  newUrl.searchParams.set('url', rssUrl);
+  newUrl.searchParams.set('disableCache', 'true');
+  return axios.get(newUrl);
 };
 const getNewPosts = (state) => {
   const promises = state.content.feeds.map(({ link, feedId }) => getAxiosResponse(link, state)
@@ -59,12 +55,10 @@ const getNewPosts = (state) => {
       }
       return Promise.resolve();
     })
-    .catch((error) => {
-      state.errorMessage = error.message;
-      state.isValid = null;
-      watcher(state).isValid = false;
-      watcher(state).currentProcess = null;
-    }));
+    // .catch((error) => {
+    //   throw new Error('dv');
+    // })
+    );
 
   Promise.allSettled(promises).finally(() => {
     setTimeout(() => getNewPosts(state), 5000);
@@ -110,11 +104,20 @@ const handler = (state) => {
         handlerClick(state, btns);
       })
       .catch((error) => {
-        if (error.message === 'errorParsing') {
-          state.errorMessage = state.i18n.t('loading.errrors.errorResource');
-          state.validUrls.pop();
-        } else {
-          state.errorMessage = error.message;
+        switch (error.message) {
+          case 'errorParsing': {
+            state.errorMessage = state.i18n.t('loading.errrors.errorResource');
+            state.validUrls.pop();
+            break;
+          }
+          case 'Network Error': {
+            state.errorMessage = state.i18n.t('loading.errrors.errorNetWork');
+            state.validUrls.pop();
+            break;
+          }
+          default: {
+            state.errorMessage = error.message;
+          }
         }
         state.isValid = null;
         watcher(state).isValid = false;
