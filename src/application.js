@@ -125,8 +125,6 @@ const app = () => {
             watcher.content.feeds.unshift({ ...feed, link: currentUrl });
             createPosts(posts, feedId);
             watcher.currentProcess = 'loadedRssContent';
-            // const btns = document.querySelectorAll('.btn-sm');
-            // handlerClick(btns);
           })
           .catch((error) => {
             switch (error.message) {
