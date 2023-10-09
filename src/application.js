@@ -11,116 +11,7 @@ import parserRss from './parsers/parserRss.js';
 
 const form = document.querySelector('.rss-form');
 const input = document.querySelector('#url-input');
-
-const watcher = (state) => onChange(state, (path, value) => render(state, value, path));
-
-const validate = (i18n, url) => {
-  setLocale({
-    mixed: {
-      default: 'field_invalid',
-    },
-    string: {
-      url: i18n.t('validation.errors.errorURL'),
-      min: i18n.t('validation.errors.errorRequared'),
-    },
-  });
-
-  const urlSchema = yup.string().url().min(1);
-
-  return urlSchema.validate(url);
-};
-const createPosts = (state, newPosts, feedId) => {
-  newPosts.forEach((post) => {
-    post.feedId = feedId;
-    post.id = _.uniqueId();
-    post.readOut = false;
-  });
-  watcher(state).content.posts.unshift(...newPosts);
-};
-const getAxiosResponse = (rssUrl) => {
-  const allOrigins = 'https://allorigins.hexlet.app/get';
-  const newUrl = new URL(allOrigins);
-  newUrl.searchParams.set('url', rssUrl);
-  newUrl.searchParams.set('disableCache', 'true');
-  return axios.get(newUrl);
-};
-const getNewPosts = (state) => {
-  const promises = state.content.feeds.map(({ link, feedId }) => getAxiosResponse(link)
-    .then((response) => {
-      const { posts } = parserRss(response, feedId);
-      const addedPosts = state.content.posts.map((post) => post.link);
-      const newPosts = posts.filter((post) => !addedPosts.includes(post.link));
-      if (newPosts.length > 0) {
-        createPosts(state, newPosts, feedId);
-      }
-      return Promise.resolve();
-    }));
-
-  Promise.allSettled(promises).finally(() => {
-    setTimeout(() => getNewPosts(state), 5000);
-  });
-};
-
-const handlerClick = (state, btns) => {
-  btns.forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      const currentId = e.target.getAttribute('data-id');
-      watcher(state).uiState.modalId = currentId;
-      watcher(state).uiState.visitedLinksIds.add(currentId);
-    });
-  });
-};
-
-const handler = (state) => {
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const url = input.value;
-    validate(state.i18n, url)
-      .then((rssUrl) => {
-        const urls = state.validUrls;
-        if (urls.includes(rssUrl)) {
-          throw new Error(state.i18n.t('validation.errors.errorUniqUrl'));
-        }
-        return rssUrl;
-      })
-      .then((rssUrl) => {
-        state.isValid = true;
-        state.validUrls.push(rssUrl);
-        watcher(state).currentProcess = 'loadingRssContent';
-        return getAxiosResponse(rssUrl);
-      })
-      .then((response) => {
-        const feedId = _.uniqueId();
-        const { posts, feed } = parserRss(response, feedId);
-        const currentUrl = state.validUrls[state.validUrls.length - 1];
-        watcher(state).content.feeds.unshift({ ...feed, link: currentUrl });
-        createPosts(state, posts, feedId);
-        watcher(state).currentProcess = 'loadedRssContent';
-        const btns = document.querySelectorAll('.btn-sm');
-        handlerClick(state, btns);
-      })
-      .catch((error) => {
-        switch (error.message) {
-          case 'errorParsing': {
-            state.errorMessage = state.i18n.t('loading.errrors.errorResource');
-            state.validUrls.pop();
-            break;
-          }
-          case 'Network Error': {
-            state.errorMessage = state.i18n.t('loading.errrors.errorNetWork');
-            state.validUrls.pop();
-            break;
-          }
-          default: {
-            state.errorMessage = error.message;
-          }
-        }
-        state.isValid = null;
-        watcher(state).isValid = false;
-        watcher(state).currentProcess = null;
-      });
-  });
-};
+const postSection = document.querySelector('.posts');
 
 const app = () => {
   const promise = new Promise((resolve) => {
@@ -150,11 +41,114 @@ const app = () => {
           modalId: '',
         },
       };
-      return state;
-    })
-    .then((state) => {
-      handler(state);
-      getNewPosts(watcher(state));
+
+      setLocale({
+        mixed: {
+          notOneOf: state.i18n.t('validation.errors.errorUniqUrl'),
+        },
+        string: {
+          url: state.i18n.t('validation.errors.errorURL'),
+          min: state.i18n.t('validation.errors.errorRequared'),
+        },
+      });
+
+      const watcher = onChange(state, (path, value) => render(state, value, path));
+
+      const validate = (url, urlList) => {
+        const urlSchema = yup.string().url().min(1).notOneOf(urlList);
+        return urlSchema.validate(url);
+      };
+
+      const createPosts = (newPosts, feedId) => {
+        newPosts.forEach((post) => {
+          post.feedId = feedId;
+          post.id = _.uniqueId();
+          post.readOut = false;
+        });
+        watcher.content.posts.unshift(...newPosts);
+      };
+
+      const getNewUrl = (rssUrl) => {
+        const allOrigins = 'https://allorigins.hexlet.app/get';
+        const newUrl = new URL(allOrigins);
+        newUrl.searchParams.set('url', rssUrl);
+        newUrl.searchParams.set('disableCache', 'true');
+        return newUrl;
+      };
+
+      const getAxiosResponse = (rssUrl) => {
+        const newUrl = getNewUrl(rssUrl);
+        return axios.get(newUrl);
+      };
+
+      const getNewPosts = () => {
+        const promises = state.content.feeds.map(({ link, feedId }) => getAxiosResponse(link)
+          .then((response) => {
+            const { posts } = parserRss(response, feedId);
+            const addedPosts = state.content.posts.map((post) => post.link);
+            const newPosts = posts.filter((post) => !addedPosts.includes(post.link));
+            if (newPosts.length > 0) {
+              createPosts(newPosts, feedId);
+            }
+            return Promise.resolve();
+          }));
+        Promise.allSettled(promises).finally(() => {
+          setTimeout(() => getNewPosts(), 5000);
+        });
+      };
+
+      getNewPosts(watcher);
+
+      postSection.addEventListener('click', (e) => {
+        const isButton = e.target.tagName === 'BUTTON';
+        if (isButton) {
+          const currentId = e.target.getAttribute('data-id');
+          watcher.uiState.modalId = currentId;
+          watcher.uiState.visitedLinksIds.add(currentId);
+        }
+      });
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const url = input.value;
+        validate(url, state.validUrls)
+          .then((rssUrl) => {
+            state.isValid = true;
+            state.validUrls.push(rssUrl);
+            watcher.currentProcess = 'loadingRssContent';
+            return getAxiosResponse(rssUrl);
+          })
+          .then((response) => {
+            const feedId = _.uniqueId();
+            const { posts, feed } = parserRss(response, feedId);
+            const currentUrl = state.validUrls[state.validUrls.length - 1];
+            watcher.content.feeds.unshift({ ...feed, link: currentUrl });
+            createPosts(posts, feedId);
+            watcher.currentProcess = 'loadedRssContent';
+            // const btns = document.querySelectorAll('.btn-sm');
+            // handlerClick(btns);
+          })
+          .catch((error) => {
+            switch (error.message) {
+              case 'errorParsing': {
+                state.errorMessage = state.i18n.t('loading.errrors.errorResource');
+                state.validUrls.pop();
+                break;
+              }
+              case 'Network Error': {
+                state.errorMessage = state.i18n.t('loading.errrors.errorNetWork');
+                state.validUrls.pop();
+                break;
+              }
+              default: {
+                state.errorMessage = error.message;
+              }
+            }
+            state.isValid = null;
+            watcher.isValid = false;
+            watcher.currentProcess = null;
+          });
+      });
     })
     .catch((error) => {
       throw new Error(error);
