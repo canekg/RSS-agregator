@@ -5,17 +5,17 @@ const postSection = document.querySelector('.posts');
 const modalWindow = document.querySelector('.modal-content');
 const btn = document.querySelector('button[type="submit"]');
 
-const renderFeedback = (state, value) => {
+const renderFeedback = (state, i18Instance, value) => {
   if (state.isValid) {
     input.classList.remove('is-invalid');
     feedback.classList.remove('text-danger');
     feedback.classList.add('text-success');
-    feedback.textContent = state.i18n.t(`loading.${value}`);
+    feedback.textContent = i18Instance.t(`${value}`);
   } else {
     input.classList.add('is-invalid');
     feedback.classList.remove('text-success');
     feedback.classList.add('text-danger');
-    feedback.textContent = state.errorMessage;
+    feedback.textContent = i18Instance.t(`errors.${state.errorMessage}`);
   }
   input.focus();
   input.value = '';
@@ -40,19 +40,23 @@ const buildContentBlock = (blockName) => {
   contentBlock.classList.add('card', 'border-0');
   const nameDiv = document.createElement('div');
   nameDiv.classList.add('card-body');
-  nameDiv.innerHTML = `<h2 class="card-title h4">${blockName}</h2>`;
+  const cardTitle = document.createElement('h2');
+  cardTitle.classList.add('card-title', 'h4');
+  cardTitle.textContent = blockName;
+  nameDiv.append(cardTitle);
+  // nameDiv.innerHTML = `<h2 class="card-title h4">${blockName}</h2>`;
   const contentList = document.createElement('ul');
   contentList.classList.add('list-group', 'border-0', 'rounded-0');
   contentBlock.append(nameDiv, contentList);
   return contentBlock;
 };
 
-const renderContentConteiner = () => {
+const renderContentConteiner = (i18Instance) => {
   const firstRound = feedSection.childNodes.length === 0;
   if (firstRound) {
-    const feedsBlock = buildContentBlock('Фиды');
+    const feedsBlock = buildContentBlock(`${i18Instance.t('feeds')}`);
     feedSection.append(feedsBlock);
-    const postsBlock = buildContentBlock('Посты');
+    const postsBlock = buildContentBlock(`${i18Instance.t('posts')}`);
     postSection.append(postsBlock);
   }
 };
@@ -67,16 +71,16 @@ const renderFeeds = (state) => {
     hTitle.classList.add('h6', 'm-0');
     hTitle.textContent = title;
 
-    const pDescriotion = document.createElement('p');
-    pDescriotion.classList.add('m-0', 'small', 'text-black-50');
-    pDescriotion.textContent = description;
+    const pDescription = document.createElement('p');
+    pDescription.classList.add('m-0', 'small', 'text-black-50');
+    pDescription.textContent = description;
 
-    newFeed.append(hTitle, pDescriotion);
+    newFeed.append(hTitle, pDescription);
     return newFeed;
   });
   return newFeeds;
 };
-const renderPosts = (state) => {
+const renderPosts = (state, i18Instance) => {
   const { posts } = state.content;
   const content = posts.map((post) => {
     const { title, link, id } = post;
@@ -104,7 +108,7 @@ const renderPosts = (state) => {
     newPostButton.setAttribute('data-id', id);
     newPostButton.setAttribute('data-bs-toggle', 'modal');
     newPostButton.setAttribute('data-bs-target', '#modal');
-    newPostButton.textContent = 'Просмотр';
+    newPostButton.textContent = `${i18Instance.t('textView')}`;
 
     newPost.append(newPostLink, newPostButton);
     return newPost;
@@ -123,14 +127,22 @@ const renderButtonInput = (state) => {
   }
 };
 
-const render = (state, value, path) => {
+const renderVisitedLinksIds = (state) => {
+  state.uiState.visitedLinksIds.forEach((id) => {
+    const visitedLink = document.querySelector(`a[data-id="${id}"]`);
+    visitedLink.classList.remove('fw-bold');
+    visitedLink.classList.add('fw-normal', 'link-secondary');
+  });
+};
+
+const render = (state, value, i18Instance, path) => {
   switch (path) {
     case 'isValid': {
-      renderFeedback(state, value);
+      renderFeedback(state, i18Instance, value);
       break;
     }
     case 'content.feeds': {
-      renderContentConteiner();
+      renderContentConteiner(i18Instance);
       const feedsList = feedSection.querySelector('ul');
       const view = renderFeeds(state);
       feedsList.replaceChildren(...view);
@@ -138,21 +150,17 @@ const render = (state, value, path) => {
     }
     case 'content.posts': {
       const postsList = postSection.querySelector('ul');
-      const view = renderPosts(state, value);
+      const view = renderPosts(state, i18Instance);
       postsList.replaceChildren(...view);
       break;
     }
     case 'currentProcess': {
-      renderFeedback(state, value);
+      renderFeedback(state, i18Instance, value);
       renderButtonInput(state);
       break;
     }
     case 'uiState.visitedLinksIds': {
-      state.uiState.visitedLinksIds.forEach((id) => {
-        const visitedLink = document.querySelector(`a[data-id="${id}"]`);
-        visitedLink.classList.remove('fw-bold');
-        visitedLink.classList.add('fw-normal', 'link-secondary');
-      });
+      renderVisitedLinksIds(state);
       break;
     }
     case 'uiState.modalId': {
