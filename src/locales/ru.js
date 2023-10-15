@@ -7,7 +7,7 @@ export default {
       errorURL: 'Ссылка должна быть валидным URL',
       errorUniqUrl: 'RSS уже существует',
       errorRequared: 'Не должно быть пустым',
-      errorNetWork: 'Ошибка сети',
+      'Network Error': 'Ошибка сети',
       errorResource: 'Ресурс не содержит валидный RSS',
     },
     loadingRssContent: 'RSS загружается',
