@@ -1,3 +1,4 @@
+/* eslint-disable no-shadow */
 /* eslint-disable no-param-reassign */
 import i18next from 'i18next';
 import onChange from 'on-change';
@@ -9,25 +10,44 @@ import resources from './locales/index.js';
 import render from './render/render.js';
 import parserRss from './parsers/parserRss.js';
 
-const form = document.querySelector('.rss-form');
-const input = document.querySelector('#url-input');
-const postSection = document.querySelector('.posts');
+const elements = {
+  form: document.querySelector('.rss-form'),
+  input: document.querySelector('#url-input'),
+  postSection: document.querySelector('.posts'),
+  blockAboutTheAuthor: document.querySelector('.text-center'),
+  mainTitle: document.querySelector('.display-3'),
+  lead: document.querySelector('.lead'),
+  forUrlInput: document.querySelector('[for="url-input"]'),
+  buttonForAdd: document.querySelector('.btn-lg'),
+  blockInfo: document.querySelector('.text-info'),
+  btnFullArticle: document.querySelector('.full-article'),
+  btnCloseModalContent: document.querySelector('.btn-secondary'),
+};
 
 const app = () => {
-  const promise = new Promise((resolve) => {
-    const i18Instance = i18next.createInstance();
-    i18Instance.init({
-      lng: 'ru',
-      debug: true,
-      resources,
-    });
-    resolve(i18Instance);
-  });
+  const fillingBlocksContent = (i18Instance) => {
+    const linkAndNameAuthor = document.createElement('a');
+    linkAndNameAuthor.setAttribute('href', i18Instance.t('linkGithubAuthor'));
+    linkAndNameAuthor.textContent = i18Instance.t('author');
+    elements.blockAboutTheAuthor.append(i18Instance.t('textCreatedBy'), ' ', linkAndNameAuthor);
+    elements.mainTitle.textContent = i18Instance.t('textMainTitle');
+    elements.lead.textContent = i18Instance.t('textLead');
+    elements.forUrlInput.textContent = i18Instance.t('textForUrlInput');
+    elements.buttonForAdd.textContent = i18Instance.t('textButton');
+    elements.blockInfo.textContent = i18Instance.t('textInfo');
+    elements.btnFullArticle.textContent = i18Instance.t('textBtnFullArticle');
+    elements.btnCloseModalContent.textContent = i18Instance.t('textCloseModalContent');
+  };
 
-  promise
-    .then((i18nInst) => {
+  const i18Instance = i18next.createInstance();
+  i18Instance.init({
+    lng: 'ru',
+    debug: true,
+    resources,
+  })
+    .then(() => {
+      fillingBlocksContent(i18Instance);
       const state = {
-        i18n: i18nInst,
         errorMessage: null,
         currentProcess: null, // 'loadingRssContent, loadedRssContent'
         isValid: null,
@@ -44,15 +64,15 @@ const app = () => {
 
       setLocale({
         mixed: {
-          notOneOf: state.i18n.t('validation.errors.errorUniqUrl'),
+          notOneOf: 'errorUniqUrl',
         },
         string: {
-          url: state.i18n.t('validation.errors.errorURL'),
-          min: state.i18n.t('validation.errors.errorRequared'),
+          url: 'errorURL',
+          min: 'errorRequared',
         },
       });
 
-      const watcher = onChange(state, (path, value) => render(state, value, path));
+      const watcher = onChange(state, (path, value) => render(state, value, i18Instance, path));
 
       const validate = (url, urlList) => {
         const urlSchema = yup.string().url().min(1).notOneOf(urlList);
@@ -68,80 +88,67 @@ const app = () => {
         watcher.content.posts.unshift(...newPosts);
       };
 
-      const getNewUrl = (rssUrl) => {
+      const getUrlWithProxy = (rssUrl) => {
         const allOrigins = 'https://allorigins.hexlet.app/get';
-        const newUrl = new URL(allOrigins);
-        newUrl.searchParams.set('url', rssUrl);
-        newUrl.searchParams.set('disableCache', 'true');
-        return newUrl;
+        const urlWithProxy = new URL(allOrigins);
+        urlWithProxy.searchParams.set('url', rssUrl);
+        urlWithProxy.searchParams.set('disableCache', 'true');
+        return urlWithProxy.toString();
       };
 
-      const getAxiosResponse = (rssUrl) => {
-        const newUrl = getNewUrl(rssUrl);
-        return axios.get(newUrl);
-      };
-
-      const getNewPosts = () => {
-        const promises = state.content.feeds.map(({ link, feedId }) => getAxiosResponse(link)
-          .then((response) => {
-            const { posts } = parserRss(response, feedId);
-            const addedPosts = state.content.posts.map((post) => post.link);
-            const newPosts = posts.filter((post) => !addedPosts.includes(post.link));
-            if (newPosts.length > 0) {
-              createPosts(newPosts, feedId);
-            }
-            return Promise.resolve();
-          }));
+      const getNewPosts = (state) => {
+        const promises = state.content.feeds.map(({ link, feedId }) => {
+          const urlWithProxy = getUrlWithProxy(link);
+          return axios.get(urlWithProxy)
+            .then((response) => {
+              const { posts } = parserRss(response);
+              const addedPosts = state.content.posts.map((post) => post.link);
+              const newPosts = posts.filter((post) => !addedPosts.includes(post.link));
+              if (newPosts.length > 0) {
+                createPosts(newPosts, feedId);
+              }
+              return Promise.resolve();
+            });
+        });
         Promise.allSettled(promises).finally(() => {
-          setTimeout(() => getNewPosts(), 5000);
+          setTimeout(() => getNewPosts(watcher), 5000);
         });
       };
 
       getNewPosts(watcher);
 
-      postSection.addEventListener('click', (e) => {
-        const isButton = e.target.tagName === 'BUTTON';
-        if (isButton) {
-          const currentId = e.target.getAttribute('data-id');
-          watcher.uiState.modalId = currentId;
+      elements.postSection.addEventListener('click', (e) => {
+        const currentId = e.target.getAttribute('data-id');
+        if (currentId) {
+          const isButton = e.target.tagName === 'BUTTON';
+          if (isButton) {
+            watcher.uiState.modalId = currentId;
+          }
           watcher.uiState.visitedLinksIds.add(currentId);
         }
       });
 
-      form.addEventListener('submit', (e) => {
+      elements.form.addEventListener('submit', (e) => {
         e.preventDefault();
-        const url = input.value;
+        const url = elements.input.value;
         validate(url, state.validUrls)
           .then((rssUrl) => {
             state.isValid = true;
             state.validUrls.push(rssUrl);
             watcher.currentProcess = 'loadingRssContent';
-            return getAxiosResponse(rssUrl);
+            const urlWithProxy = getUrlWithProxy(rssUrl);
+            return axios.get(urlWithProxy);
           })
           .then((response) => {
             const feedId = _.uniqueId();
-            const { posts, feed } = parserRss(response, feedId);
+            const { posts, feed } = parserRss(response);
             const currentUrl = state.validUrls[state.validUrls.length - 1];
-            watcher.content.feeds.unshift({ ...feed, link: currentUrl });
+            watcher.content.feeds.unshift({ ...feed, feedId, link: currentUrl });
             createPosts(posts, feedId);
             watcher.currentProcess = 'loadedRssContent';
           })
           .catch((error) => {
-            switch (error.message) {
-              case 'errorParsing': {
-                state.errorMessage = state.i18n.t('loading.errrors.errorResource');
-                state.validUrls.pop();
-                break;
-              }
-              case 'Network Error': {
-                state.errorMessage = state.i18n.t('loading.errrors.errorNetWork');
-                state.validUrls.pop();
-                break;
-              }
-              default: {
-                state.errorMessage = error.message;
-              }
-            }
+            state.errorMessage = error.message;
             state.isValid = null;
             watcher.isValid = false;
             watcher.currentProcess = null;
