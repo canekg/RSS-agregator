@@ -1,5 +1,3 @@
-import _ from 'lodash';
-
 const parserRss = (response) => {
   try {
     const parser = new DOMParser();
