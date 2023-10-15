@@ -51,6 +51,7 @@ const app = () => {
         errorMessage: null,
         currentProcess: null, // 'loadingRssContent, loadedRssContent'
         isValid: null,
+        currentUrl: null,
         validUrls: [],
         content: {
           posts: [],
@@ -134,12 +135,13 @@ const app = () => {
         validate(url, state.validUrls)
           .then((rssUrl) => {
             state.isValid = true;
-            state.validUrls.push(rssUrl);
+            state.currentUrl = rssUrl;
             watcher.currentProcess = 'loadingRssContent';
             const urlWithProxy = getUrlWithProxy(rssUrl);
             return axios.get(urlWithProxy);
           })
           .then((response) => {
+            state.validUrls.push(state.currentUrl);
             const feedId = _.uniqueId();
             const { posts, feed } = parserRss(response);
             const currentUrl = state.validUrls[state.validUrls.length - 1];
