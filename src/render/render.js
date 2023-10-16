@@ -44,7 +44,6 @@ const buildContentBlock = (blockName) => {
   cardTitle.classList.add('card-title', 'h4');
   cardTitle.textContent = blockName;
   nameDiv.append(cardTitle);
-  // nameDiv.innerHTML = `<h2 class="card-title h4">${blockName}</h2>`;
   const contentList = document.createElement('ul');
   contentList.classList.add('list-group', 'border-0', 'rounded-0');
   contentBlock.append(nameDiv, contentList);
@@ -54,9 +53,9 @@ const buildContentBlock = (blockName) => {
 const renderContentConteiner = (i18Instance) => {
   const firstRound = feedSection.childNodes.length === 0;
   if (firstRound) {
-    const feedsBlock = buildContentBlock(`${i18Instance.t('feeds')}`);
+    const feedsBlock = buildContentBlock(`${i18Instance.t('textFeeds')}`);
     feedSection.append(feedsBlock);
-    const postsBlock = buildContentBlock(`${i18Instance.t('posts')}`);
+    const postsBlock = buildContentBlock(`${i18Instance.t('textPosts')}`);
     postSection.append(postsBlock);
   }
 };
