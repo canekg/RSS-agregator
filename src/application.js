@@ -54,6 +54,7 @@ const app = () => {
         currentUrl: null,
         validUrls: [],
         content: {
+          newPosts: [],
           posts: [],
           feeds: [],
         },
@@ -86,7 +87,8 @@ const app = () => {
           post.id = _.uniqueId();
           post.readOut = false;
         });
-        watcher.content.posts = [...newPosts];
+        state.content.posts.unshift(...newPosts);
+        watcher.content.newPosts = [...newPosts];
       };
 
       const getUrlWithProxy = (rssUrl) => {

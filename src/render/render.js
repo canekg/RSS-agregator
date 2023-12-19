@@ -80,8 +80,8 @@ const renderFeeds = (state) => {
   return newFeeds;
 };
 const renderPosts = (state, i18Instance) => {
-  const { posts } = state.content;
-  const content = posts.map((post) => {
+  const { newPosts } = state.content;
+  const content = newPosts.map((post) => {
     const { title, link, id } = post;
     const newPost = document.createElement('li');
     newPost.classList.add(
@@ -147,7 +147,7 @@ const render = (state, value, i18Instance, path) => {
       feedsList.replaceChildren(...view);
       break;
     }
-    case 'content.posts': {
+    case 'content.newPosts': {
       const postsList = postSection.querySelector('ul');
       const view = renderPosts(state, i18Instance);
       postsList.prepend(...view);
