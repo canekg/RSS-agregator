@@ -86,7 +86,7 @@ const app = () => {
           post.id = _.uniqueId();
           post.readOut = false;
         });
-        watcher.content.posts.unshift(...newPosts);
+        watcher.content.posts = [...newPosts];
       };
 
       const getUrlWithProxy = (rssUrl) => {

@@ -150,7 +150,7 @@ const render = (state, value, i18Instance, path) => {
     case 'content.posts': {
       const postsList = postSection.querySelector('ul');
       const view = renderPosts(state, i18Instance);
-      postsList.replaceChildren(...view);
+      postsList.prepend(...view);
       break;
     }
     case 'currentProcess': {
